@@ -1,11 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class ZombieController : MonoBehaviour {
 
+	private List<Transform> congaLine = new List<Transform>();
 	public float moveSpeed;
 	public float turnSpeed;
 	private Vector3 moveDirection;
+	private bool isInvincible = false;
+	private float timeSpentInvincible;
+	private int lives = 2;
+	public AudioClip enemyContactSound;
+	public AudioClip catContactSound;
 
 	[SerializeField]
 	private PolygonCollider2D[] colliders;
@@ -65,6 +72,23 @@ public class ZombieController : MonoBehaviour {
 			                 Quaternion.Euler( 0, 0, targetAngle ), 
 			                 turnSpeed * Time.deltaTime );
 		EnforceBounds();
+		//1
+		if (isInvincible)
+		{
+			//2
+			timeSpentInvincible += Time.deltaTime;
+			
+			//3
+			if (timeSpentInvincible < 3f) {
+				float remainder = timeSpentInvincible % .3f;
+				renderer.enabled = remainder > .15f; 
+			}
+			//4
+			else {
+				renderer.enabled = true;
+				isInvincible = false;
+			}
+		}
 	}
 
 	public void SetColliderForSprite( int spriteNum )
@@ -76,7 +100,30 @@ public class ZombieController : MonoBehaviour {
 
 	void OnTriggerEnter2D( Collider2D other )
 	{
-		Debug.Log ("Hit " + other.gameObject);
+		if(other.CompareTag("cat")) {
+			audio.PlayOneShot(catContactSound);
+			Transform followTarget = congaLine.Count == 0 ? transform : congaLine[congaLine.Count-1];
+			other.transform.parent.GetComponent<CatController>().JoinConga( followTarget, moveSpeed, turnSpeed );
+			congaLine.Add( other.transform );
+			if (congaLine.Count >= 10) {
+				Application.LoadLevel("WinScene");
+			}
+		}
+		else if(!isInvincible && other.CompareTag("enemy")) {
+			audio.PlayOneShot(enemyContactSound);
+			isInvincible = true;
+			timeSpentInvincible = 0;
+			for( int i = 0; i < 2 && congaLine.Count > 0; i++ )
+			{
+				int lastIdx = congaLine.Count-1;
+				Transform cat = congaLine[ lastIdx ];
+				congaLine.RemoveAt(lastIdx);
+				cat.parent.GetComponent<CatController>().ExitConga();
+			}
+			if (--lives <= 0) {
+				Application.LoadLevel("LoseScene");
+			}
+		}
 	}
 }
 

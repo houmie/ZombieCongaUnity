@@ -3,6 +3,8 @@
 --- !u!78 &1
 TagManager:
   tags:
+  - cat
+  - enemy
   - 
   Builtin Layer 0: Default
   Builtin Layer 1: TransparentFX
@@ -40,4 +42,16 @@ TagManager:
   - name: Default
     userID: 0
     uniqueID: 0
+    locked: 0
+  - name: Cats
+    userID: 1
+    uniqueID: 3450848889
+    locked: 0
+  - name: Enemies
+    userID: 2
+    uniqueID: 3080066167
+    locked: 0
+  - name: Zombie
+    userID: 3
+    uniqueID: 3247751307
     locked: 0
